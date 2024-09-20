@@ -3,7 +3,6 @@ import '../app/globals.css'
 import CyanButton from '../components/CyanButton'
 import Head from "next/head"
 import { useRouter } from 'next/navigation'
-import { Link } from 'react'
 
 export default function index() {
   const router = useRouter()
