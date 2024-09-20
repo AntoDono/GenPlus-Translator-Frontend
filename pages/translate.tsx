@@ -18,8 +18,7 @@ export default function translate() {
         if (generateStatus) return
         setGenerateStatus(true)
         setErrorMessage("")
-        if (inputBox.current && translateOptions.current) {
-            console.log("SENT TRANSLATION")
+        if (inputBox.current && translateOptions.current && process.env.API_ENDPOINT) {
             let user_input: string = inputBox.current.value
             if (user_input != "") {
                 let options = translateOptions.current.value
