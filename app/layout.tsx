@@ -1,4 +1,5 @@
 import './globals.css'
+import Nav from '@/components/Nav'
 
 export const metadata = {
   title: 'Gen+ Translator',
@@ -12,6 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <Nav/>
       <body>{children}</body>
     </html>
   )
