@@ -14,7 +14,7 @@ export default function index() {
         <title>Gen+ Translator 🧠🚽</title>
       </Head>
       <h1 className="text-center text-[7vmin] font-[Rubik] font-black text-white">Gen+ Translator 🧠🚽</h1>
-      <h2 className="text-[2vmin] text-[Montserrat] text-white">World's first bi-directional brainrot translator</h2>
+      <h2 className="text-[3vmin] text-[Montserrat] text-white">World's first bi-directional Gen Z, Gen Alpha, and Brainrot translator.</h2>
       <CyanButton text="Try Now" onClick={() => router.push('/translate')} />
       <a href="https://github.com/AntoDono/GenPlus-Translator" target='_blank'>
         <div className="flex justify-center items-center gap-x-2 text-white flex-row">

@@ -2,14 +2,18 @@ import Head from "next/head"
 import '../app/globals.css'
 import CyanButton from "@/components/CyanButton"
 import React, { useRef, useEffect, useState } from 'react';
-import { FetchEventResult } from "next/dist/server/web/types";
 import Nav from "@/components/Nav";
+import LoadingSpin from "@/components/LoadingSpin";
+import WordDefinitionHover from "@/components/WordDefinitionHover";
 
 export default function translate() {
 
     const [generateStatus, setGenerateStatus] = useState(false)
     const [serverMessage, setServerMessage] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
+    const [translationWords, setTranslationWords] = useState<String[]>([])
+    const [wordsUsed, setWordsUsed] = useState<Array<String[]>>([])
+    const [words, setWords] = useState<Array<String[]>>([])
     const inputBox = useRef<HTMLInputElement>(null)
     const outputBox = useRef<HTMLDivElement>(null)
     const translateOptions = useRef<HTMLSelectElement>(null)
@@ -22,7 +26,7 @@ export default function translate() {
             let user_input: string = inputBox.current.value
             if (user_input != "") {
                 let options = translateOptions.current.value
-                setServerMessage("Waiting for server generation...")
+                setServerMessage("Translating (this might take a few seconds)...")
                 let raw_data: Response = await fetch(process.env.API_ENDPOINT, {
                     method: 'POST',
                     headers: {
@@ -34,13 +38,20 @@ export default function translate() {
                     }),
                 })
                 let data = await raw_data.json()
-                outputBox.current!.innerText = data["result"]
-            }else{
+                setTranslationWords(data["result"].split(" "))
+                setWords(data["words"])
+                console.log(data)
+                console.log(data["words"])
+            } else {
                 setErrorMessage("Please enter a value in the textbox")
             }
         }
         setServerMessage("")
         setGenerateStatus(false)
+    }
+
+    function normalize_string(s: String) {
+        return s.toLowerCase().replace(/[^\w\s]/g, '');
     }
 
     return (
@@ -50,8 +61,9 @@ export default function translate() {
                 <title>Gen+ Translator 🧠🚽</title>
             </Head>
             <div className="flex justify-center flex-col items-center pt-20 gap-y-10">
-                <div className="text-xl font-[Rubik] flex flex-row gap-x-2">
-                    <div className="w-full max-w-sm min-w-[200px]">
+                <div className="text-xl font-[Rubik] flex items-center justify-center flex-wrap flex-row gap-x-2 w-full">
+                    <label className="font-[Montserrat] w-fit font-bold text-slate-100">Translation Options:</label>
+                    <div className="w-fit">
                         <div className="relative">
                             <select ref={translateOptions}
                                 className="w-full bg-white placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded pl-3 pr-8 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md appearance-none cursor-pointer">
@@ -68,13 +80,58 @@ export default function translate() {
                 outline-none border-4 border-slate-400 bg-white w-[80%] p-4 rounded-md
                 transition-all focus:border-blue-400 text-lg font-[Montserrat]"/>
                 <div className="flex items-center flex-col">
-                    <CyanButton text="Translate 🚽" onClick={handleTranslation} />
-                    <p className="text-lg text-green-700 font-bold">{serverMessage}</p>
-                    <p className="text-lg text-red-800 font-bold">{errorMessage}</p>
+                    {
+                        serverMessage == "" ?
+                            <CyanButton text="Translate 🤔" onClick={handleTranslation} /> :
+                            <div className="flex flex-row gap-x-5">
+                                <LoadingSpin />
+                                <p className="text-lg text-green-500 font-bold">{serverMessage}</p>
+                            </div>
+                    }
+                    <p className="text-lg text-red-500 font-bold">{errorMessage}</p>
                 </div>
                 <div ref={outputBox} className="
                 outline-none border-4 border-slate-400 bg-white w-[80%] p-4 rounded-md
-                transition-all focus:border-blue-400 text-lg font-[Montserrat]"></div>
+                transition-all focus:border-blue-400 text-lg font-[Montserrat] flex gap-x-1">
+                    {translationWords.map((translated_word, index) => {
+
+                        let lowerWord = translated_word.toLocaleLowerCase()
+
+                        let isIn = false
+                        let word_definition = null
+                        let word_dictionary = null
+
+                        for (let word_and_def of words) {
+                            console.log(word_and_def)
+                            let word = word_and_def[0]
+                            let wordNormalized = word.trim().toLocaleLowerCase()
+                            if (lowerWord == wordNormalized || lowerWord.startsWith(wordNormalized)) {
+                                isIn = true
+                                word_definition = word_and_def[1]
+                                word_dictionary = word_and_def[0]
+                                // setWordsUsed([...wordsUsed, word_and_def])
+                                break
+                            }
+                        }
+
+                        return (
+                            isIn ? <span className="bg-yellow-200">
+                                <WordDefinitionHover text={translated_word}
+                                    hover_text={`${word_dictionary}: ${word_definition}`}></WordDefinitionHover>
+                            </span> : <span>{translated_word}</span>
+                        )
+                    })}
+                </div>
+                <div className="w-full justify-center items-center flex-col">
+                    {wordsUsed.map((item, key)=>{
+                        return (
+                            <div className="flex flex-row gap-x-2">
+                                <label className="text-lg font-bold">{item[0]}</label>
+                                <p className="text-lg">{item[1]}</p>
+                            </div>
+                        )
+                    })}
+                </div>
             </div>
         </div>
     )
