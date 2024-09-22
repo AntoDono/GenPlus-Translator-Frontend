@@ -93,7 +93,7 @@ export default function translate() {
     }
 
     return (
-        <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-screen">
+        <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 min-h-screen h-screen w-full overflow-x-hidden">
             <Nav />
             <Head>
                 <title>Gen+ Translator 🧠🚽</title>
@@ -132,7 +132,7 @@ export default function translate() {
                     <div></div> :
                     <div ref={outputBox} className="
                 outline-none border-4 border-slate-400 bg-white w-[80%] p-4 rounded-md
-                transition-all focus:border-blue-400 text-lg font-[Montserrat] flex gap-x-1">
+                transition-all focus:border-blue-400 text-lg font-[Montserrat] flex gap-x-1 flex-wrap">
                         {translationRender.map((item, key) => {
                             let special: boolean = item[0]
                             let word: string = item[1]
@@ -146,7 +146,7 @@ export default function translate() {
                         })}
                     </div>
                 }
-                <div className="w-full flex justify-center items-center flex-col">
+                <div className="w-full flex justify-center items-center flex-col flex-wrap">
                     <div className="w-[80%]">
                         {wordsUsed.map((item, key) => {
                             return (
