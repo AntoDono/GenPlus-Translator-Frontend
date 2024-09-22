@@ -1,8 +1,8 @@
 import '../app/globals.css'
 
 interface WordDefinitionHoverProp {
-    text: String,
-    hover_text: String
+    text: string,
+    hover_text: string
 }
 
 export default function WordDefinitionHover(props: WordDefinitionHoverProp) {

@@ -6,17 +6,26 @@ import Nav from "@/components/Nav";
 import LoadingSpin from "@/components/LoadingSpin";
 import WordDefinitionHover from "@/components/WordDefinitionHover";
 
+interface serverData {
+    result: string,
+    words: string[]
+}
+
 export default function translate() {
 
     const [generateStatus, setGenerateStatus] = useState(false)
     const [serverMessage, setServerMessage] = useState("")
     const [errorMessage, setErrorMessage] = useState("")
-    const [translationWords, setTranslationWords] = useState<String[]>([])
-    const [wordsUsed, setWordsUsed] = useState<Array<String[]>>([])
-    const [words, setWords] = useState<Array<String[]>>([])
+    const [wordsUsed, setWordsUsed] = useState<Array<string[]>>([])
+    const [translationRender, setTranslationRender] =
+        useState<Array<[boolean, string, string | null, string | null]>>([])
     const inputBox = useRef<HTMLInputElement>(null)
     const outputBox = useRef<HTMLDivElement>(null)
     const translateOptions = useRef<HTMLSelectElement>(null)
+
+    function capitalizeFirstLetter(s: string) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
 
     const handleTranslation = async () => {
         if (generateStatus) return
@@ -38,10 +47,7 @@ export default function translate() {
                     }),
                 })
                 let data = await raw_data.json()
-                setTranslationWords(data["result"].split(" "))
-                setWords(data["words"])
-                console.log(data)
-                console.log(data["words"])
+                renderTranslation(data)
             } else {
                 setErrorMessage("Please enter a value in the textbox")
             }
@@ -50,8 +56,40 @@ export default function translate() {
         setGenerateStatus(false)
     }
 
-    function normalize_string(s: String) {
-        return s.toLowerCase().replace(/[^\w\s]/g, '');
+    function renderTranslation(data: serverData) {
+
+        let translationWords = data["result"].split(" ")
+        let words = data["words"]
+
+        let word_data: Array<[boolean, string, string | null, string | null]> = []
+        let words_used: Array<string[]> = []
+
+        for (let translated_word of translationWords) {
+
+            let lowerWord = translated_word.toLocaleLowerCase()
+
+            let isIn = false
+            let word_definition: string | null = null
+            let word_dictionary: string | null = null
+
+            for (let word_and_def of words) {
+                let word = word_and_def[0]
+                let wordNormalized = word.trim().toLocaleLowerCase()
+                if (lowerWord == wordNormalized || lowerWord.startsWith(wordNormalized)) {
+                    if (word_and_def[0] == null || word_and_def[1] == null) break
+                    isIn = true
+                    word_dictionary = capitalizeFirstLetter(word_and_def[0])
+                    word_definition = word_and_def[1]
+                    words_used.push([word_dictionary, word_definition])
+                    break
+                }
+            }
+
+            word_data.push([isIn, translated_word, word_dictionary, word_definition])
+        }
+
+        setTranslationRender(word_data)
+        setWordsUsed(words_used)
     }
 
     return (
@@ -83,54 +121,42 @@ export default function translate() {
                     {
                         serverMessage == "" ?
                             <CyanButton text="Translate 🤔" onClick={handleTranslation} /> :
-                            <div className="flex flex-row gap-x-5">
+                            <div className="flex flex-row flex-wrap p-5 gap-x-5">
                                 <LoadingSpin />
                                 <p className="text-lg text-green-500 font-bold">{serverMessage}</p>
                             </div>
                     }
                     <p className="text-lg text-red-500 font-bold">{errorMessage}</p>
                 </div>
-                <div ref={outputBox} className="
+                {translationRender.length == 0 ?
+                    <div></div> :
+                    <div ref={outputBox} className="
                 outline-none border-4 border-slate-400 bg-white w-[80%] p-4 rounded-md
                 transition-all focus:border-blue-400 text-lg font-[Montserrat] flex gap-x-1">
-                    {translationWords.map((translated_word, index) => {
-
-                        let lowerWord = translated_word.toLocaleLowerCase()
-
-                        let isIn = false
-                        let word_definition = null
-                        let word_dictionary = null
-
-                        for (let word_and_def of words) {
-                            console.log(word_and_def)
-                            let word = word_and_def[0]
-                            let wordNormalized = word.trim().toLocaleLowerCase()
-                            if (lowerWord == wordNormalized || lowerWord.startsWith(wordNormalized)) {
-                                isIn = true
-                                word_definition = word_and_def[1]
-                                word_dictionary = word_and_def[0]
-                                // setWordsUsed([...wordsUsed, word_and_def])
-                                break
-                            }
-                        }
-
-                        return (
-                            isIn ? <span className="bg-yellow-200">
-                                <WordDefinitionHover text={translated_word}
-                                    hover_text={`${word_dictionary}: ${word_definition}`}></WordDefinitionHover>
-                            </span> : <span>{translated_word}</span>
-                        )
-                    })}
-                </div>
-                <div className="w-full justify-center items-center flex-col">
-                    {wordsUsed.map((item, key)=>{
-                        return (
-                            <div className="flex flex-row gap-x-2">
-                                <label className="text-lg font-bold">{item[0]}</label>
-                                <p className="text-lg">{item[1]}</p>
-                            </div>
-                        )
-                    })}
+                        {translationRender.map((item, key) => {
+                            let special: boolean = item[0]
+                            let word: string = item[1]
+                            return (
+                                special ?
+                                    <span className="bg-yellow-200">
+                                        <WordDefinitionHover text={word}
+                                            hover_text={`${item[2]}: ${item[3]}`}></WordDefinitionHover>
+                                    </span> : <span>{word}</span>
+                            )
+                        })}
+                    </div>
+                }
+                <div className="w-full flex justify-center items-center flex-col">
+                    <div className="w-[80%]">
+                        {wordsUsed.map((item, key) => {
+                            return (
+                                <div className="flex flex-row gap-x-2">
+                                    <label className="text-lg font-bold">{item[0]}: </label>
+                                    <p className="text-lg">{item[1]}</p>
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
             </div>
         </div>
