@@ -2,15 +2,121 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-    font-family: Rubik;
-    font-display: swap;
-    src: url(./fonts/Rubik-VariableFont_wght.ttf);
+/* Strict black and white. English is paper, brainrot is ink. */
+:root {
+  --paper: #ffffff;
+  --ink: #0b0b0b;
+  --graphite: #6e6e6e; /* secondary text on paper */
+  --ash: #a3a3a3; /* secondary text on ink */
+  --rule: #e3e3e3; /* hairlines on paper */
+  --smoke: #2a2a2a; /* hairlines on ink */
+  color-scheme: light;
 }
 
-@font-face {
-    font-family: Montserrat;
-    font-display: swap;
-    src: url(./fonts/Montserrat-VariableFont_wght.ttf);
+html {
+  background: var(--paper);
+  color: var(--ink);
 }
 
+body {
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+@layer components {
+  /* Archivo at its widest: used sparingly for the wordmark and language labels */
+  .type-expanded {
+    font-variation-settings: "wdth" 125;
+  }
+
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+}
+
+/* The ink layer slides to whichever pane holds brainrot. */
+.ink-layer {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 50%;
+  background: var(--ink);
+  transition: transform 560ms cubic-bezier(0.77, 0, 0.18, 1);
+  will-change: transform;
+}
+.ink-layer[data-at="second"] {
+  transform: translateY(100%);
+}
+@media (min-width: 768px) {
+  .ink-layer {
+    inset: 0 auto 0 0;
+    width: 50%;
+    height: 100%;
+  }
+  .ink-layer[data-at="second"] {
+    transform: translateX(100%);
+  }
+}
+
+.pane {
+  transition: color 560ms cubic-bezier(0.77, 0, 0.18, 1);
+}
+
+/* The swap control inverts whatever sits behind it, so it reads on both sides of the seam. */
+.swap {
+  mix-blend-mode: difference;
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--smoke) 0%,
+    #3d3d3d 40%,
+    var(--smoke) 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.pane-paper .shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--rule) 0%,
+    #f3f3f3 40%,
+    var(--rule) 80%
+  );
+  background-size: 200% 100%;
+}
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ink-layer,
+  .pane {
+    transition: none;
+  }
+  .shimmer {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
