@@ -1,8 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-    env: {
-        API_ENDPOINT: "https://genplus.antodono.com/translate"
-    }
-};
+const nextConfig = {};
 
 export default nextConfig;
