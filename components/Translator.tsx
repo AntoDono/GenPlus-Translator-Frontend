@@ -85,8 +85,8 @@ function WithChips({
         onBlur={() => onActive(null)}
         className={`focus-ring rounded-[3px] px-[0.18em] py-[0.02em] no-underline transition-colors box-decoration-clone ${
           active === n
-            ? "bg-paper text-ink outline outline-2 outline-offset-2 outline-paper"
-            : "bg-paper text-ink"
+            ? "bg-ink text-paper outline outline-2 outline-offset-2 outline-ink"
+            : "bg-ink text-paper"
         }`}
       >
         {text.slice(s.start, s.end)}
@@ -187,9 +187,6 @@ export default function Translator() {
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
-  // Which pane is ink: brainrot is always black.
-  const sourceInk = !toSlang;
-  const targetInk = toSlang;
   const showRenderedInput = !!result && result.direction === "slang-to-en" && !editing;
 
   const textSize = "text-[clamp(1.375rem,2.3vw,2rem)] leading-[1.3] tracking-[-0.01em]";
@@ -200,15 +197,11 @@ export default function Translator() {
         className="relative grid grid-rows-[1fr_1fr] border-y border-rule md:grid-cols-2 md:grid-rows-1"
         data-direction={direction}
       >
-        <div aria-hidden className="ink-layer" data-at={toSlang ? "second" : "first"} />
-
         {/* Source pane */}
         <div
-          className={`pane relative flex min-h-[300px] flex-col p-5 sm:p-8 md:min-h-[min(68vh,620px)] md:p-10 ${
-            sourceInk ? "text-paper" : "pane-paper text-ink"
-          }`}
+          className="relative flex min-h-[300px] flex-col p-5 sm:p-8 md:min-h-[min(68vh,620px)] md:p-10"
         >
-          <PaneLabel lang={sourceLang} ink={sourceInk} htmlFor="source" />
+          <PaneLabel lang={sourceLang} htmlFor="source" />
 
           <div className="relative mt-5 flex-1">
             {showRenderedInput ? (
@@ -246,16 +239,14 @@ export default function Translator() {
                     : "Paste a message full of slang."
                 }
                 spellCheck={toSlang}
-                className={`${textSize} h-full min-h-[8rem] w-full resize-none bg-transparent outline-none ${
-                  sourceInk ? "placeholder:text-[#5e5e5e]" : "placeholder:text-[#b4b4b4]"
-                }`}
+                className={`${textSize} h-full min-h-[8rem] w-full resize-none bg-transparent outline-none placeholder:text-faint`}
               />
             )}
           </div>
 
           <div className="mt-6 flex items-center justify-between gap-4">
             <span
-              className={`font-mono text-xs tabular-nums ${sourceInk ? "text-ash" : "text-graphite"}`}
+              className="font-mono text-xs tabular-nums text-graphite"
             >
               {showRenderedInput ? (
                 <button type="button" onClick={startEditing} className="focus-ring underline underline-offset-4">
@@ -269,9 +260,7 @@ export default function Translator() {
               type="button"
               onClick={() => void run()}
               disabled={!text.trim() || status === "loading"}
-              className={`focus-ring group inline-flex items-center gap-3 rounded-full px-5 py-2.5 text-sm font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-35 ${
-                sourceInk ? "bg-paper text-ink" : "bg-ink text-paper"
-              }`}
+              className={`focus-ring group inline-flex items-center gap-3 rounded-full px-5 py-2.5 text-sm font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-35 bg-ink text-paper`}
             >
               {status === "loading" ? "Translating" : "Translate"}
               <span className="font-mono text-[0.7rem] font-normal opacity-60">{shortcut}</span>
@@ -281,12 +270,10 @@ export default function Translator() {
 
         {/* Target pane */}
         <div
-          className={`pane relative flex min-h-[300px] flex-col p-5 sm:p-8 md:min-h-[min(68vh,620px)] md:p-10 ${
-            targetInk ? "text-paper" : "pane-paper text-ink"
-          }`}
+          className="relative flex min-h-[300px] flex-col border-t border-rule p-5 sm:p-8 md:min-h-[min(68vh,620px)] md:border-l md:border-t-0 md:p-10"
           aria-live="polite"
         >
-          <PaneLabel lang={targetLang} ink={targetInk} />
+          <PaneLabel lang={targetLang} />
 
           <div className="relative mt-5 flex-1">
             {status === "loading" && (
@@ -329,7 +316,7 @@ export default function Translator() {
 
             {status === "idle" && !result && (
               <div>
-                <p className={`font-mono text-xs ${targetInk ? "text-ash" : "text-graphite"}`}>
+                <p className="font-mono text-xs text-graphite">
                   Try one
                 </p>
                 <ul className="mt-3 space-y-2">
@@ -338,9 +325,7 @@ export default function Translator() {
                       <button
                         type="button"
                         onClick={() => pickExample(ex)}
-                        className={`focus-ring text-left text-lg decoration-1 underline-offset-[6px] hover:underline md:text-xl ${
-                          targetInk ? "text-ash hover:text-paper" : "text-graphite hover:text-ink"
-                        }`}
+                        className={`focus-ring text-left text-lg decoration-1 underline-offset-[6px] hover:underline md:text-xl text-graphite hover:text-ink`}
                       >
                         {ex}
                       </button>
@@ -356,9 +341,7 @@ export default function Translator() {
               <button
                 type="button"
                 onClick={copy}
-                className={`focus-ring font-mono text-xs underline underline-offset-4 ${
-                  targetInk ? "text-ash hover:text-paper" : "text-graphite hover:text-ink"
-                }`}
+                className="focus-ring font-mono text-xs text-graphite underline underline-offset-4 hover:text-ink"
               >
                 {copied ? "Copied" : "Copy translation"}
               </button>
@@ -370,7 +353,7 @@ export default function Translator() {
           type="button"
           onClick={swap}
           aria-label={`Swap languages. Now translating ${sourceLang} to ${targetLang}.`}
-          className="swap focus-ring absolute left-1/2 top-1/2 z-20 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-paper text-ink outline-paper"
+          className="focus-ring absolute left-1/2 top-1/2 z-20 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-rule bg-paper text-ink transition-colors hover:border-ink"
         >
           <svg
             viewBox="0 0 24 24"
@@ -424,10 +407,8 @@ export default function Translator() {
   );
 }
 
-function PaneLabel({ lang, ink, htmlFor }: { lang: string; ink: boolean; htmlFor?: string }) {
-  const cls = `type-expanded text-[0.8rem] font-extrabold uppercase tracking-[0.14em] ${
-    ink ? "text-paper" : "text-ink"
-  }`;
+function PaneLabel({ lang, htmlFor }: { lang: string; htmlFor?: string }) {
+  const cls = "type-expanded text-[0.8rem] font-extrabold uppercase tracking-[0.14em]";
   return htmlFor ? (
     <label htmlFor={htmlFor} className={cls}>
       {lang}

@@ -2,15 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Strict black and white. English is paper, brainrot is ink. */
+/* One surface, one ink. Light by default, fully black in dark mode. */
 :root {
   --paper: #ffffff;
   --ink: #0b0b0b;
-  --graphite: #6e6e6e; /* secondary text on paper */
-  --ash: #a3a3a3; /* secondary text on ink */
-  --rule: #e3e3e3; /* hairlines on paper */
-  --smoke: #2a2a2a; /* hairlines on ink */
+  --graphite: #6e6e6e; /* secondary text */
+  --faint: #b4b4b4; /* placeholders */
+  --rule: #e3e3e3; /* hairlines */
+  --shimmer: #f3f3f3;
   color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0b0b0b;
+    --ink: #f5f5f5;
+    --graphite: #8f8f8f;
+    --faint: #555555;
+    --rule: #262626;
+    --shimmer: #333333;
+    color-scheme: dark;
+  }
 }
 
 html {
@@ -44,56 +56,10 @@ body {
   }
 }
 
-/* The ink layer slides to whichever pane holds brainrot. */
-.ink-layer {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 50%;
-  background: var(--ink);
-  transition: transform 560ms cubic-bezier(0.77, 0, 0.18, 1);
-  will-change: transform;
-}
-.ink-layer[data-at="second"] {
-  transform: translateY(100%);
-}
-@media (min-width: 768px) {
-  .ink-layer {
-    inset: 0 auto 0 0;
-    width: 50%;
-    height: 100%;
-  }
-  .ink-layer[data-at="second"] {
-    transform: translateX(100%);
-  }
-}
-
-.pane {
-  transition: color 560ms cubic-bezier(0.77, 0, 0.18, 1);
-}
-
-/* The swap control inverts whatever sits behind it, so it reads on both sides of the seam. */
-.swap {
-  mix-blend-mode: difference;
-}
-
 .shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--smoke) 0%,
-    #3d3d3d 40%,
-    var(--smoke) 80%
-  );
+  background: linear-gradient(90deg, var(--rule) 0%, var(--shimmer) 40%, var(--rule) 80%);
   background-size: 200% 100%;
   animation: shimmer 1.4s linear infinite;
-}
-.pane-paper .shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--rule) 0%,
-    #f3f3f3 40%,
-    var(--rule) 80%
-  );
-  background-size: 200% 100%;
 }
 @keyframes shimmer {
   from {
@@ -105,10 +71,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ink-layer,
-  .pane {
-    transition: none;
-  }
   .shimmer {
     animation: none;
   }

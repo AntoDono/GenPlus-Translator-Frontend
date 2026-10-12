@@ -12,9 +12,8 @@ const config: Config = {
         paper: "var(--paper)",
         ink: "var(--ink)",
         graphite: "var(--graphite)",
-        ash: "var(--ash)",
+        faint: "var(--faint)",
         rule: "var(--rule)",
-        smoke: "var(--smoke)",
       },
       fontFamily: {
         sans: ["var(--font-archivo)", "system-ui", "sans-serif"],
