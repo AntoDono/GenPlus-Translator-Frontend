@@ -11,7 +11,7 @@ World's first bi-drectional brainrot translator.<br>
 - [Backend](https://github.com/AntoDono/GenPlus-Translator-Backend)
 
 ## Frontend
-This is the frontend part of Gen+ Translator, built on the Next.JS framework. This essentially is an interface for users to access the backend model of Gen+ Translator.
+This is the frontend part of Gen+ Translator, built with Next.js 15 (App Router), React 19 and Tailwind. It is a single page: the two-way translator, footnoted definitions for the slang it finds, and a searchable lexicon of every term the model knows.
 
 ## Setup
 
@@ -19,12 +19,18 @@ This is the frontend part of Gen+ Translator, built on the Next.JS framework. Th
 ```bash
 npm i
 ```
-2. Configure the API endpoint of the backend in next.config.mjs
-3. Run development environment:
+2. Point the app at the backend (copy `.env.example` to `.env.local`):
+```.env
+NEXT_PUBLIC_API_URL="https://genplus.antodono.com"
+```
+3. Run the dev server:
 ```bash
 npm run dev
 ```
-4. Build:
+4. Type-check and build:
 ```bash
+npm run lint
 npm run build
 ```
+
+The backend must expose `GET /vocabulary`, `POST /translate` and `POST /define` (see the backend README).
