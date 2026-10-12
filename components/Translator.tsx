@@ -15,13 +15,13 @@ const LANG = { en: "English", slang: "Brainrot" } as const;
 const EXAMPLES: Record<Direction, string[]> = {
   "en-to-slang": [
     "I'm so tired, that test was really hard.",
-    "Your outfit looks amazing today.",
-    "Be honest, is this restaurant actually good?",
+    "My uncle tells the same joke at every family dinner.",
+    "That guy is very confident for someone who just tripped in front of everyone.",
   ],
   "slang-to-en": [
     "that test lowkey cooked me fr",
-    "bro's fit is bussin, no cap",
-    "she ate that presentation, main character energy",
+    "unc is so washed bro thinks minions memes are peak 💀",
+    "she ate that presentation, main character energy no cap",
   ],
 };
 
@@ -235,8 +235,8 @@ export default function Translator() {
                 }}
                 placeholder={
                   toSlang
-                    ? "Type something in plain English."
-                    : "Paste a message full of slang."
+                    ? "Type something your grandma would say."
+                    : "Paste the message that made you go \u201chuh??\u201d"
                 }
                 spellCheck={toSlang}
                 className={`${textSize} h-full min-h-[8rem] w-full resize-none bg-transparent outline-none placeholder:text-faint`}
@@ -276,14 +276,7 @@ export default function Translator() {
           <PaneLabel lang={targetLang} />
 
           <div className="relative mt-5 flex-1">
-            {status === "loading" && (
-              <div className="space-y-3 pt-2" role="status">
-                <span className="sr-only">Translating</span>
-                {["92%", "78%", "44%"].map((w) => (
-                  <div key={w} className="shimmer h-[1.1em] rounded-sm text-[clamp(1.375rem,2.3vw,2rem)]" style={{ width: w }} />
-                ))}
-              </div>
-            )}
+            {status === "loading" && <Flushing />}
 
             {status === "error" && (
               <div className="max-w-md">
@@ -415,5 +408,30 @@ function PaneLabel({ lang, htmlFor }: { lang: string; htmlFor?: string }) {
     </label>
   ) : (
     <h2 className={cls}>{lang}</h2>
+  );
+}
+
+const FLUSH_LINES = [
+  "Flushing it through the brainrot pipeline…",
+  "Consulting the skibidi council…",
+  "Charging up the aura…",
+  "Asking a 12-year-old…",
+  "Letting it cook…",
+];
+
+/** Loading state: a spinning toilet and a rotating caption. */
+function Flushing() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((n) => (n + 1) % FLUSH_LINES.length), 1600);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="flex items-center gap-4 pt-2" role="status">
+      <span aria-hidden className="flush inline-block text-[clamp(2rem,3.4vw,2.75rem)] leading-none">
+        🚽
+      </span>
+      <span className="font-mono text-sm text-graphite">{FLUSH_LINES[i]}</span>
+    </div>
   );
 }

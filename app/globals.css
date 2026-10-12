@@ -9,7 +9,6 @@
   --graphite: #6e6e6e; /* secondary text */
   --faint: #b4b4b4; /* placeholders */
   --rule: #e3e3e3; /* hairlines */
-  --shimmer: #f3f3f3;
   color-scheme: light;
 }
 
@@ -20,7 +19,6 @@
     --graphite: #8f8f8f;
     --faint: #555555;
     --rule: #262626;
-    --shimmer: #333333;
     color-scheme: dark;
   }
 }
@@ -56,22 +54,17 @@ body {
   }
 }
 
-.shimmer {
-  background: linear-gradient(90deg, var(--rule) 0%, var(--shimmer) 40%, var(--rule) 80%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
+.flush {
+  animation: flush 0.9s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
-@keyframes shimmer {
-  from {
-    background-position: 100% 0;
-  }
+@keyframes flush {
   to {
-    background-position: -100% 0;
+    transform: rotate(360deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .shimmer {
+  .flush {
     animation: none;
   }
   html {

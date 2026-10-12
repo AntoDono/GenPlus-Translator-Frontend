@@ -16,7 +16,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gen+ Translator",
+  title: "Gen+ Translator 🧠🚽",
   description: "Translate English to Gen Z and Gen Alpha slang, and back.",
 };
 
