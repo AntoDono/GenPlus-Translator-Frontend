@@ -27,6 +27,9 @@ const EXAMPLES: Record<Direction, string[]> = {
 
 type Status = "idle" | "loading" | "error";
 
+/** Translate this long after the last keystroke. */
+const AUTO_DELAY = 1000;
+
 interface Done extends TranslateResult {
   direction: Direction;
   source: string;
@@ -111,6 +114,7 @@ export default function Translator() {
   const [shortcut, setShortcut] = useState("Ctrl ↵");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const requestId = useRef(0);
+  const lastRun = useRef(""); // direction + text of the latest request, so the same input isn't sent twice
 
   useEffect(() => {
     if (/Mac|iPhone|iPad/.test(navigator.platform)) setShortcut("⌘ ↵");
@@ -134,20 +138,20 @@ export default function Translator() {
   );
   const { notes, numberOf } = useMemo(() => buildNotes(brainrotSpans), [brainrotSpans]);
 
+  // The previous translation stays on screen (dimmed) until the new one arrives;
+  // a newer request makes older responses stale.
   async function run(input = text) {
     const trimmed = input.trim();
-    if (!trimmed || status === "loading") return;
+    if (!trimmed) return;
+    lastRun.current = `${direction}\n${trimmed}`;
     const id = ++requestId.current;
     setStatus("loading");
     setError("");
-    setResult(null);
     setActive(null);
     try {
       const res = await translate(direction, trimmed);
       if (id !== requestId.current) return;
       setResult({ ...res, direction, source: trimmed });
-      setText(trimmed);
-      setEditing(false);
       setStatus("idle");
     } catch (e) {
       if (id !== requestId.current) return;
@@ -155,6 +159,23 @@ export default function Translator() {
       setStatus("error");
     }
   }
+
+  // Auto-translate once typing pauses
+  useEffect(() => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      requestId.current++;
+      lastRun.current = "";
+      setResult(null);
+      setStatus("idle");
+      setError("");
+      return;
+    }
+    if (lastRun.current === `${direction}\n${trimmed}`) return;
+    const t = setTimeout(() => void run(trimmed), AUTO_DELAY);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text, direction]);
 
   function swap() {
     requestId.current++;
@@ -170,7 +191,7 @@ export default function Translator() {
 
   function pickExample(example: string) {
     setText(example);
-    setEditing(true);
+    setEditing(false);
     void run(example);
   }
 
@@ -190,7 +211,8 @@ export default function Translator() {
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
-  const showRenderedInput = !!result && result.direction === "slang-to-en" && !editing;
+  const showRenderedInput =
+    !!result && result.direction === "slang-to-en" && result.source === text.trim() && !editing;
 
   const textSize = "text-[clamp(1.375rem,2.3vw,2rem)] leading-[1.3] tracking-[-0.01em]";
 
@@ -230,6 +252,8 @@ export default function Translator() {
                 value={text}
                 maxLength={MAX_INPUT}
                 onChange={(e) => setText(e.target.value)}
+                onFocus={() => setEditing(true)}
+                onBlur={() => setEditing(false)}
                 onKeyDown={(e) => {
                   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
                     e.preventDefault();
@@ -259,15 +283,9 @@ export default function Translator() {
                 `${text.length} / ${MAX_INPUT}`
               )}
             </span>
-            <button
-              type="button"
-              onClick={() => void run()}
-              disabled={!text.trim() || status === "loading"}
-              className={`focus-ring group inline-flex items-center gap-3 rounded-full px-5 py-2.5 text-sm font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-35 bg-ink text-paper`}
-            >
-              {status === "loading" ? "Translating" : "Translate"}
-              <span className="font-mono text-[0.7rem] font-normal opacity-60">{shortcut}</span>
-            </button>
+            <span className="font-mono text-xs text-graphite">
+              {status === "loading" ? "Flushing… 🚽" : `Translates as you type · ${shortcut} now`}
+            </span>
           </div>
         </div>
 
@@ -279,7 +297,7 @@ export default function Translator() {
           <PaneLabel lang={targetLang} />
 
           <div className="relative mt-5 flex-1">
-            {status === "loading" && <Flushing />}
+            {status === "loading" && !result && <Flushing />}
 
             {status === "error" && (
               <div className="max-w-md">
@@ -294,8 +312,12 @@ export default function Translator() {
               </div>
             )}
 
-            {status === "idle" && result && (
-              <p className={`${textSize} whitespace-pre-wrap break-words`}>
+            {status !== "error" && result && (
+              <p
+                className={`${textSize} whitespace-pre-wrap break-words transition-opacity ${
+                  status === "loading" || result.source !== text.trim() ? "opacity-40" : ""
+                }`}
+              >
                 {result.direction === "en-to-slang" ? (
                   <WithChips
                     text={result.translation}
@@ -333,7 +355,7 @@ export default function Translator() {
           </div>
 
           <div className="mt-6 flex h-[2.625rem] items-center justify-end">
-            {status === "idle" && result && (
+            {status !== "error" && result && (
               <button
                 type="button"
                 onClick={copy}
@@ -367,7 +389,7 @@ export default function Translator() {
       </div>
 
       {/* Footnotes: the slang in this translation, numbered in reading order */}
-      {status === "idle" && result && (
+      {status !== "error" && result && (
         <div className="px-5 py-8 sm:px-8 md:px-10 md:py-10">
           {notes.length > 0 ? (
             <ol className="grid gap-y-4 md:grid-cols-2 md:gap-x-20">
