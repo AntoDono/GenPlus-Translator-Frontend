@@ -114,6 +114,9 @@ export default function Translator() {
 
   useEffect(() => {
     if (/Mac|iPhone|iPad/.test(navigator.platform)) setShortcut("⌘ ↵");
+    // Landing page links pick the starting direction with ?dir=
+    const dir = new URLSearchParams(window.location.search).get("dir");
+    if (dir === "en-to-slang" || dir === "slang-to-en") setDirection(dir);
   }, []);
 
   const toSlang = direction === "en-to-slang";

@@ -63,9 +63,66 @@ body {
   }
 }
 
+/* Landing demo: English swirls down the toilet, brainrot rises back up */
+.swirl {
+  animation: swirl 1.1s cubic-bezier(0.55, 0, 0.8, 0.4) forwards;
+  transform-origin: 1.5rem 100%;
+}
+@keyframes swirl {
+  45% {
+    transform: translateY(2rem) rotate(80deg) scale(0.3);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(4.5rem) rotate(260deg) scale(0);
+    opacity: 0;
+  }
+}
+.rise {
+  animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes rise {
+  from {
+    transform: translateY(0.75rem);
+    opacity: 0;
+  }
+}
+
+.ticker-wrap {
+  overflow: hidden;
+}
+
+/* Stickers jiggle on hover */
+.wobble:hover {
+  animation: wobble 0.5s ease-in-out;
+}
+@keyframes wobble {
+  25% { transform: rotate(-6deg) scale(1.05); }
+  50% { transform: rotate(5deg) scale(1.05); }
+  75% { transform: rotate(-3deg); }
+}
+.ticker {
+  animation: ticker 40s linear infinite;
+}
+.ticker-wrap:hover .ticker {
+  animation-play-state: paused;
+}
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .flush {
+  .flush,
+  .swirl,
+  .rise,
+  .ticker,
+  .wobble:hover {
     animation: none;
+  }
+  .ticker-wrap {
+    overflow-x: auto;
   }
   html {
     scroll-behavior: auto;
